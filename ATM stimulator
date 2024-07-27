@@ -1,0 +1,119 @@
+import pygame
+import sys
+pygame.init()
+width,height=680,480
+window=pygame.display.set_mode((width,height))
+pygame.display.set_caption('ATM MACHINE')
+font=pygame.font.Font(None,36)
+small_font=pygame.font.Font(None,28)
+white=(255,255,255)
+black=(0,0,0)
+green=(0,255,0)
+red=(255,0,0)
+blue=(0,0,255)
+gray=(200,200,200)
+balance=0
+input_text=''
+action=''
+message=''
+message_color=black
+button_width,button_height=180,50
+deposit_button=pygame.Rect(50,400,button_width,button_height)
+withdraw_button=pygame.Rect(250,400,button_width,button_height)
+balance_button=pygame.Rect(450,400,button_width,button_height)
+
+def render_text(text,font,color,surface,x,y):
+    textobj=font.render(text,True,color)
+    textrect=textobj.get_rect()
+    textrect.topleft=(x,y)
+    surface.blit(textobj,textrect)
+
+run=True
+while run:
+    window.fill(white)
+    for event in pygame.event.get():
+        if event.type==pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        if event.type==pygame.KEYDOWN:
+            if event.key==pygame.K_ESCAPE:
+                pygame.quit()
+                sys.exit()
+            if event.key==pygame.K_BACKSPACE:
+                input_text=input_text[:-1]
+            elif event.key==pygame.K_RETURN:
+                if action=='deposit':
+                    try:
+                        amount=int(input_text)
+                        balance+=amount
+                        message=f'Successfully deposited ${amount}.'
+                        message_color=black
+                        action=''
+                        input_text=''
+                    except ValueError:
+                        message='Invalid amount.'
+                        message_color=red
+                        input_text=''
+                elif action=='withdraw':
+                    try:
+                        amount=int(input_text)
+                        if amount<=balance:
+                            balance-=amount
+                            message=f'Successfully withdraw ${amount}.'
+                            message_color=black
+                        else:
+                            message='Insufficient Amount to be withdrawn.'
+                            message_color=red
+                        action=''
+                        input_text=''
+                    except ValueError:
+                        message='Invalid Amount.'
+                        message_color=red
+                        input_text=''
+                """elif action=='':
+                    if input_text.lower()=='balance':
+                        action='balance'
+                        input_text=''
+                    elif input_text.lower()=='deposit':
+                        action='deposit'
+                        input_text=''
+                    elif input_text.lower()=='withdraw':
+                        action='withdraw'
+                        input_text=''
+                    else:
+                        input_text='' """
+            else:
+                key_name=pygame.key.name(event.key)
+                if len(key_name)==1 and key_name.isalnum():
+                    input_text+=key_name
+                elif key_name=='space':
+                    input_text+=' '
+        if event.type==pygame.MOUSEBUTTONDOWN:
+            if deposit_button.collidepoint(event.pos):
+                action='deposit'
+                input_text=''
+                message='Enter amount to deposit: '
+                message_color=black
+            elif withdraw_button.collidepoint(event.pos):
+                action='withdraw'
+                input_text=''
+                message='Enter amount to withdraw: '
+                message_color=black
+            elif balance_button.collidepoint(event.pos):
+                message=f'Your balance is : ${balance}'
+                message_color=black
+                action=''
+    
+    render_text('***ATM MACHINE***', font,blue,window,240,50)
+    pygame.draw.rect(window,green,deposit_button)
+    render_text('Deposit',small_font,black,window,deposit_button.x+50,deposit_button.y+15)
+    pygame.draw.rect(window,green,withdraw_button)
+    render_text('Withdraw',small_font,black,window,deposit_button.x+250,withdraw_button.y+15)
+    pygame.draw.rect(window,green,balance_button)
+    render_text('Check balance',small_font,black,window,deposit_button.x+420,balance_button.y+15)
+    if message:
+        render_text(message,font,message_color,window,20,100)
+    if action in ['deposit','withdraw','Display balance']:
+        render_text(input_text,font,green,window,20,150)
+
+    pygame.display.flip()
